@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
+import { Request, Response } from 'express'
 
 export const getSecret = (req: Request, res: Response) => {
-    res.json({ secretData: 'This is the secret data!' });
-};
+  res.json({ secretData: 'This is the secret data!' })
+}
