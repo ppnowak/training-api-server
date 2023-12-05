@@ -1,32 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
 import { validateJwtToken } from './jwt';
 import { getUserLogin, getUserPassword } from './config';
+import { ApiError } from './errorHandler';
 
 export const passwordValidator = (req: Request, res: Response, next: NextFunction) => {
     const validators = [validateUserPassword, validateToken];
-    let result: ValidationResult = { failed: true };
+    let result: ApiError | undefined = undefined;
     for (const validator of validators) {
         result = validator(req, res);
-        if (!result.failed) {
+        if (result === undefined) {
             break;
         }
     }
-    if (result.failed) {
-        res.status(403).send({ error: result?.error })
+    if (result) {
+        next(result);
         return;
     }
     next();
 }
 
-type ValidationResult = { 
-    failed: boolean, 
-    error?: string
-};
-
 export type UserData = {
     user: string,
     password: string,
 }
+
+const createUnauthorizedApiError = () => new ApiError(401, 'Unauthorized');
 
 export const getUserFromContext = (req: Request): UserData => {
     const user = req.query.username as string || req.headers['x-username'] as string;
@@ -34,12 +32,11 @@ export const getUserFromContext = (req: Request): UserData => {
     return { user, password };
 }
 
-const validateUserPassword = (req: Request, res: Response): ValidationResult => {
+const validateUserPassword = (req: Request, res: Response): ApiError | undefined => {
   const { user, password } = getUserFromContext(req);
   if (!user || !password || !isValidUser(user, password)) {
-    return { failed: true, error: 'Unauthorized' };
+    return createUnauthorizedApiError();
   }
-  return { failed: false };
 }
 
 export type TokenData = {
@@ -56,24 +53,23 @@ export const extractTokenFromHeader = (req: Request): TokenData => {
     return { authType, token };
 }
 
-const validateToken = (req: Request, res: Response): ValidationResult => {
+const validateToken = (req: Request, res: Response): ApiError | undefined => {
   const { authType, token } = extractTokenFromHeader(req);
   if (!authType || !token) {
-    return { failed: true, error: 'Unauthorized' };
+    return createUnauthorizedApiError();
   }
   
   if (authType.toLowerCase() === 'bearer') {
     if (!isValidJwtToken(token)) {
-        return { failed: true, error: 'Unauthorized' };
+        return createUnauthorizedApiError();
     }
   } else if (authType.toLowerCase() === 'basic') {
     if (!isValidBasicAuth(token)) {
-        return { failed: true, error: 'Unauthorized' };
+        return createUnauthorizedApiError();
     }
   } else {
-    return { failed: true, error: 'Unauthorized' };
+    return createUnauthorizedApiError();
   }
-  return { failed: false };
 }
 
 const isValidUser = (user: string, password: string): boolean => {

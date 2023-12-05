@@ -11,6 +11,9 @@ import { getSecret } from './controllers/secretController';
 import { doLogin } from './controllers/loginController';
 import { getTokenInfo } from './controllers/tokenInfoController';
 import { getAppPort } from './commons/config';
+import { setupErrorHandler, setupNotFoundErrorHandler } from './commons/errorHandler';
+import { getRedirect } from './controllers/redirectController';
+import userRouter from './controllers/userController';
 
 const app = express();
 
@@ -28,6 +31,12 @@ app.get(Paths.INFO, getSupportedPaths(app));
 app.post(Paths.LOGIN, passwordValidator, doLogin);
 app.get(Paths.SECRET, passwordValidator, getSecret);
 app.get(Paths.CHECK_TOKEN, getTokenInfo);
+app.get(Paths.REDIRECT, getRedirect);
+app.use(userRouter);
+
+// Setup global error handler
+app.use(setupNotFoundErrorHandler());
+app.use(setupErrorHandler());
 
 // Startup express
 app.listen(getAppPort(), () => {

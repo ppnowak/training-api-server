@@ -1,3 +1,5 @@
+DISCLAIMER! The code on this repository serves only API for training purposes. It does not show good practices on how to design and implement API.
+
 # Running locally with NodeJS
 
 Create `.env` file and put contents:
