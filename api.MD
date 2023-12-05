@@ -1,100 +1,137 @@
 # General API
 
-## `GET /`
+## `GET /info`
 
-Returns list of all available endpoints.
+Returns list with all available endpoints.
 
-```json
+Example:
+```
 [
     "GET /time",
-    ...
+    "GET /ip",
+    "GET /mirror",
+    "PATCH /mirror",
+    "POST /mirror",
+    "PUT /mirror",
+    "GET /info",
+    "POST /login",
+    "GET /secret",
+    "GET /checkToken"
 ]
-```
-
-## `GET /time`
-
-Returns current time as ISO timestamp
-
-```json
-{
-    "time": "2023-12-05T19:27:31.969Z"
-}
 ```
 
 ## `GET /ip`
 
-Returns server & client IP.
+Returns server & client IP as JSON object.
 
-```json
+Example:
+```
 {
-    "serverIp": "::ffff:127.0.0.1",
-    "clientIp": "::ffff:127.0.0.1"
+    "serverIp": "::ffff:172.17.0.2",
+    "clientIp": "::ffff:172.17.0.1"
 }
 ```
 
-## `GET/POST/PATCH/PUT /mirror`
+## `GET /time`
 
-Mirrors request.
+Returns current time as ISO timestamp.
 
-```json
-POST /mirror?path=abcd HTTP/1.1
+Example:
+```
+{
+    "time": "2023-12-02T20:59:56.451Z"
+}
+```
+
+## `* /mirror`
+
+Mirrors any request. Shows all request data in the response.
+
+### Example 1
+Request:
+```
+GET /mirror HTTP/1.1
+Host: 127.0.0.1:3000
+```
+
+Response:
+```
+{
+    "method": "GET",
+    "url": "/mirror",
+    "headers": {
+        "user-agent": "PostmanRuntime/7.35.0",
+        "accept": "*/*",
+        "cache-control": "no-cache",
+        "postman-token": "80854cc7-0b1a-467a-93af-1f50b615e166",
+        "host": "127.0.0.1:3000",
+        "accept-encoding": "gzip, deflate, br",
+        "connection": "keep-alive"
+    },
+    "payload": {}
+}
+```
+
+### Example 2
+Request:
+```
+POST /mirror HTTP/1.1
 Host: 127.0.0.1:3000
 Content-Type: application/json
-Content-Length: 29
+Content-Length: 42
 
-{
-    "username": "admin"
-}
+{"username": "admin", "password": "admin"}
 ```
 
+Response:
 ```
 {
     "method": "POST",
-    "url": "/mirror?path=abcd",
+    "url": "/mirror",
     "headers": {
-        "local-header": "Wartosc lokalna",
         "content-type": "application/json",
         "user-agent": "PostmanRuntime/7.35.0",
         "accept": "*/*",
-        "host": "127.0.0.1:3000",
         "cache-control": "no-cache",
-        "postman-token": "479515a8-9379-465c-ab2f-381b25ba0f3b",
+        "postman-token": "26a46e6c-6858-45e9-88e5-43d6e7a630e4",
+        "host": "127.0.0.1:3000",
         "accept-encoding": "gzip, deflate, br",
         "connection": "keep-alive",
-        "content-length": "29"
+        "content-length": "42"
     },
     "payload": {
-        "username": "admin"
+        "username": "admin",
+        "password": "admin"
     }
 }
 ```
 
-## `POST /login`
+## POST /login
 
-Simulates login - sends JWT token on success request
+Simulates login action, returns JWT key as the response.
 
-Supported authentication methods:
-- headers `x-username` & `x-password`
-- query params `username` & `password`
-- HTTP basic auth
+Implemented authorization types:
+- Basic HTTP login
+- `x-username` & `x-password` headers
+- Query parameters `username` & `password`
 
-```json
+Example:
+```
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzAxODA0NzQwLCJleHAiOjE3MDE4MDQ4MDB9.meQGNKdlqbMvgk5rC_72cdHg4MG9s8vKl45OUk-Jc7I"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzAxNTQ5NzU2LCJleHAiOjE3MDE1NDk4MTZ9.Y-3k6hRyVfZ5hh1Z_92gZHd503YxptwT-KmpQb7Gztw"
 }
 ```
 
-## `GET /secret`
+## GET /secret
 
-Simulates authentication protected resource.
+Simulates protected endpoint. Can be accessible with one of authorization types:
+- Basic HTTP login
+- `x-username` & `x-password` headers
+- Query parameters `username` & `password`
+- JWT token from `POST /login`
 
-Supported authentication methods:
-- headers `x-username` & `x-password`
-- query params `username` & `password`
-- HTTP basic auth
-- HTTP bearer with JWT token 
-
-```json
+Response:
+```
 {
     "secretData": "This is the secret data!"
 }
@@ -102,13 +139,15 @@ Supported authentication methods:
 
 ## `GET /checkToken`
 
-Takes JWT token from context (auth bearer) and reveals details. Similar as https://jwt.io/
+Shows JWT token details (takes token from authorization header)
 
+Response:
 ```
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MDE4MDQ3OTQsImV4cCI6MTcwMTgwNDg1NH0.fPSoO4CIJlkSgZoHqvU1jTaNtj6mhBQh5JHsgG4lXUY",
-    "iat": 1701804794,
-    "exp": 1701804854
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzAxNTQ5NzU2LCJleHAiOjE3MDE1NDk4MTZ9.Y-3k6hRyVfZ5hh1Z_92gZHd503YxptwT-KmpQb7Gztw",
+    "username": "admin",
+    "iat": 1701549715,
+    "exp": 1701549775
 }
 ```
 
