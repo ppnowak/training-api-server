@@ -10,6 +10,7 @@ export const setupThrottling = (options: ThrottlingOptions) =>
     windowMs: options.timeRangeSeconds * 1000,
     max: options.maxRequests,
     message: {
+      status: 429,
       error: 'Too many requests from this IP, please try again later.',
     },
   })

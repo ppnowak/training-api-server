@@ -13,6 +13,7 @@ interface User {
   id: number
   firstName: string
   lastName: string
+  pin?: number
   registrationDate: Date
   status: Status
   address: Address
@@ -198,8 +199,8 @@ let users: User[] = [
 ]
 let userIdCounter = users.length + 1
 
-const allowedPostKeys: (keyof User)[] = ['firstName', 'lastName', 'address']
-const allowedPatchKeys: (keyof User)[] = ['firstName', 'lastName', 'address', 'status']
+const allowedPostKeys: (keyof User)[] = ['firstName', 'lastName', 'address', 'pin']
+const allowedPatchKeys: (keyof User)[] = ['firstName', 'lastName', 'address', 'pin', 'status']
 
 const isAllFieldsAllowed = (req: Request, allowedKeys: (keyof User)[]) => {
   const userFields = Object.keys(req.body)
@@ -211,7 +212,7 @@ const addUser = (req: Request, res: Response, next: NextFunction) => {
     return next(new ApiError(400, 'Invalid fields in the request. Allowed are: ' + allowedPostKeys))
   }
 
-  const { firstName, lastName, address } = req.body
+  const { firstName, lastName, address, pin } = req.body
 
   if (!firstName || !lastName || !address || !address.street || !address.city || !address.zipCode) {
     return next(new ApiError(400, 'Incomplete user data.'))
@@ -223,6 +224,7 @@ const addUser = (req: Request, res: Response, next: NextFunction) => {
     lastName,
     registrationDate: new Date(),
     status: 'Pending',
+    pin,
     address,
   }
 
@@ -237,7 +239,7 @@ const updateUser = (req: Request, res: Response, next: NextFunction) => {
   }
 
   const userId = parseInt(req.params.userId, 10)
-  const { firstName, lastName, address, status } = req.body
+  const { firstName, lastName, address, status, pin } = req.body
 
   if (!firstName || !lastName || !address || !status || !address.street || !address.city || !address.zipCode) {
     return next(new ApiError(400, 'Incomplete user data.'))
@@ -258,6 +260,7 @@ const updateUser = (req: Request, res: Response, next: NextFunction) => {
   updatedUser.lastName = lastName
   updatedUser.address = address
   updatedUser.status = status
+  updatedUser.pin = pin
 
   res.json(updatedUser)
 }
@@ -268,7 +271,7 @@ const patchUser = (req: Request, res: Response, next: NextFunction) => {
   }
 
   const userId = parseInt(req.params.userId, 10)
-  const { firstName, lastName, address, status } = req.body
+  const { firstName, lastName, address, status, pin } = req.body
 
   const userIndex = users.findIndex((user) => user.id === userId)
 
@@ -286,6 +289,7 @@ const patchUser = (req: Request, res: Response, next: NextFunction) => {
   if (lastName) updatedUser.lastName = lastName
   if (address) updatedUser.address = { ...updatedUser.address, ...address }
   if (status) updatedUser.status = status
+  if (pin) updatedUser.pin = pin
 
   res.json(updatedUser)
 }
@@ -337,7 +341,9 @@ const getAllUsers = (req: Request, res: Response, next: NextFunction) => {
   // Sortowanie
   if (req.query.sortBy && filteredUsers.length > 0) {
     const sortBy = req.query.sortBy.toString() as keyof User // Używamy keyof User, aby uniknąć błędu indeksowania
-    filteredUsers.sort((a, b) => (a[sortBy] > b[sortBy] ? 1 : -1))
+    if (sortBy !== 'pin') {
+      filteredUsers.sort((a, b) => (a[sortBy] > b[sortBy] ? 1 : -1))
+    }
   }
 
   // Ograniczenie ilości wyników

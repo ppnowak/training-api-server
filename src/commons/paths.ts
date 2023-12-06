@@ -7,4 +7,5 @@ export const Paths = {
   LOGIN: '/login',
   CHECK_TOKEN: '/checkToken',
   REDIRECT: '/redirect',
+  PRESENTATION: '/presentation',
 }

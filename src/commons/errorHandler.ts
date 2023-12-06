@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import { getUseErrorHandler } from './config'
 
 export class ApiError extends Error {
   constructor(
@@ -10,6 +11,9 @@ export class ApiError extends Error {
 }
 
 export const setupErrorHandler = () => (err: Error, req: Request, res: Response, next: NextFunction) => {
+  if (!getUseErrorHandler()) {
+    return next()
+  }
   if (err instanceof ApiError) {
     res.status(err.statusCode).json({ status: err.statusCode, error: err.message })
   } else {

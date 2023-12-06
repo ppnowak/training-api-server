@@ -6,6 +6,7 @@ interface AppConfig {
   USER_LOGIN: string
   USER_PASSWORD: string
   JWT_SECRET: string
+  USE_ERROR_HANDLER: string
 }
 
 function getConfigValue(key: keyof AppConfig): string | number {
@@ -14,6 +15,15 @@ function getConfigValue(key: keyof AppConfig): string | number {
     throw new Error(`Missing configuration value for ${key}`)
   }
   return value
+}
+
+function getConfigValueBool(key: keyof AppConfig, defaultValue: boolean): boolean {
+  try {
+    const value = getConfigValue(key) as string
+    return value.toLowerCase() === 'true'
+  } catch (error) {
+    return defaultValue
+  }
 }
 
 export function getAppPort(): number {
@@ -30,4 +40,8 @@ export function getUserPassword(): string {
 
 export function getJwtSecret(): string {
   return getConfigValue('JWT_SECRET') as string
+}
+
+export function getUseErrorHandler(): boolean {
+  return getConfigValueBool('USE_ERROR_HANDLER', true)
 }

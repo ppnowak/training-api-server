@@ -14,6 +14,7 @@ import { getAppPort } from './commons/config'
 import { setupErrorHandler, setupNotFoundErrorHandler } from './commons/errorHandler'
 import { getRedirect } from './controllers/redirectController'
 import userRouter from './controllers/userController'
+import { getDownloadController } from './controllers/downloadController'
 
 const app = express()
 
@@ -32,6 +33,7 @@ app.post(Paths.LOGIN, passwordValidator, doLogin)
 app.get(Paths.SECRET, passwordValidator, getSecret)
 app.get(Paths.CHECK_TOKEN, getTokenInfo)
 app.get(Paths.REDIRECT, getRedirect)
+app.get(Paths.PRESENTATION, getDownloadController('presentation.pdf', 'application/pdf'))
 app.use(userRouter)
 
 // Setup global error handler
