@@ -10,11 +10,12 @@ import { passwordValidator } from './commons/authorizationValidator'
 import { getSecret } from './controllers/secretController'
 import { doLogin } from './controllers/loginController'
 import { getTokenInfo } from './controllers/tokenInfoController'
-import { getAppPort } from './commons/config'
 import { setupErrorHandler, setupNotFoundErrorHandler } from './commons/errorHandler'
 import { getRedirect } from './controllers/redirectController'
 import userRouter from './controllers/userController'
-import { getDownloadController } from './controllers/downloadController'
+import {  startServer } from './commons/server'
+import { join } from 'path';
+import serveIndex from 'serve-index';
 
 const app = express()
 
@@ -24,7 +25,7 @@ app.use(express.json())
 app.use(Paths.MIRROR, express.text())
 app.use(setupLogging())
 
-// Setup paths
+// // Setup paths
 app.get(Paths.TIME, getTime)
 app.get(Paths.IP, getIp)
 app.all(Paths.MIRROR, mirrorRequest)
@@ -33,14 +34,15 @@ app.post(Paths.LOGIN, passwordValidator, doLogin)
 app.get(Paths.SECRET, passwordValidator, getSecret)
 app.get(Paths.CHECK_TOKEN, getTokenInfo)
 app.get(Paths.REDIRECT, getRedirect)
-app.get(Paths.PRESENTATION, getDownloadController('presentation.pdf', 'application/pdf'))
 app.use(userRouter)
+
+// Serve the entire directory and enable directory listing
+const publicDirectory = join(__dirname, '..', 'files');
+console.log(publicDirectory)
+app.use('/files', express.static(publicDirectory), serveIndex(publicDirectory));
 
 // Setup global error handler
 app.use(setupNotFoundErrorHandler())
 app.use(setupErrorHandler())
 
-// Startup express
-app.listen(getAppPort(), () => {
-  console.log(`Server is listening on port ${getAppPort()}`)
-})
+startServer(app)

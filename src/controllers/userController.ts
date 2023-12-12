@@ -279,7 +279,7 @@ const patchUser = (req: Request, res: Response, next: NextFunction) => {
     return next(new ApiError(404, 'User not found.'))
   }
 
-  if (!isValidStatus(status)) {
+  if (status && !isValidStatus(status)) {
     return next(new ApiError(400, `Incorrect status ${status}. Allowed: ${getValidStatuses()}.`))
   }
 
@@ -305,7 +305,8 @@ const getAllUsers = (req: Request, res: Response, next: NextFunction) => {
 
   // Filtracja po firstName
   if (req.query.id) {
-    filteredUsers = filteredUsers.filter((user) => user.id == parseInt(req.query.id as string))
+    const allowedIds: number[] = Object.values(req.query.id).map(id => parseInt(id as string));
+    filteredUsers = filteredUsers.filter((user) => allowedIds.indexOf(user.id) >= 0)
   }
 
   // Filtracja po lastName

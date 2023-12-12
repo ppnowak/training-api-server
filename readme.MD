@@ -8,6 +8,7 @@ APP_PORT=<port>
 USER_LOGIN=<login>
 USER_PASSWORD=<password>
 JWT_SECRET=<secret>
+HTTPS_ENABLED=false
 ```
 
 Install dependencies:
@@ -35,4 +36,13 @@ docker run -p <app_port>:<app_port> -e APP_PORT=<app_port> -e USER_LOGIN=<login>
 Example:
 ```
 docker run -p 3000:3000 -e APP_PORT=3000 -e USER_LOGIN=admin -e USER_PASSWORD=admin1 -e JWT_SECRET=secret training-api-server
+```
+
+# HTTPS support
+
+In order to enable HTTPS, set the config flag to true and add https certificate public/private keys path:
+```
+HTTPS_ENABLED=true
+PRIVATE_KEY_PATH=/path/to/privkey.pem
+CERTIFICATE_PATH=/path/to/fullchain.pem
 ```

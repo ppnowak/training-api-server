@@ -7,6 +7,9 @@ interface AppConfig {
   USER_PASSWORD: string
   JWT_SECRET: string
   USE_ERROR_HANDLER: string
+  HTTPS_ENABLED: boolean
+  PRIVATE_KEY_PATH: string
+  CERTIFICATE_PATH: string
 }
 
 function getConfigValue(key: keyof AppConfig): string | number {
@@ -44,4 +47,16 @@ export function getJwtSecret(): string {
 
 export function getUseErrorHandler(): boolean {
   return getConfigValueBool('USE_ERROR_HANDLER', true)
+}
+
+export function getPrivateKeyPath(): string {
+  return getConfigValue("PRIVATE_KEY_PATH") as string;
+}
+
+export function getCertificateType(): string {
+  return getConfigValue("CERTIFICATE_PATH") as string;
+}
+
+export function isHttpsEnabled(): boolean {
+  return getConfigValueBool("HTTPS_ENABLED", false);
 }
