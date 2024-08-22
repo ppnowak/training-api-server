@@ -16,6 +16,7 @@ import userRouter from './controllers/userController'
 import {  startServer } from './commons/server'
 import { join } from 'path';
 import serveIndex from 'serve-index';
+import { getApiDescription } from './controllers/apiDescriptionController'
 
 const app = express()
 
@@ -26,6 +27,7 @@ app.use(Paths.MIRROR, express.text())
 app.use(setupLogging())
 
 // // Setup paths
+app.get(Paths.ROOT, getApiDescription);
 app.get(Paths.TIME, getTime)
 app.get(Paths.IP, getIp)
 app.all(Paths.MIRROR, mirrorRequest)
@@ -38,7 +40,6 @@ app.use(userRouter)
 
 // Serve the entire directory and enable directory listing
 const publicDirectory = join(__dirname, '..', 'files');
-console.log(publicDirectory)
 app.use('/files', express.static(publicDirectory), serveIndex(publicDirectory));
 
 // Setup global error handler

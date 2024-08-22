@@ -12,17 +12,17 @@ interface AppConfig {
   CERTIFICATE_PATH: string
 }
 
-function getConfigValue(key: keyof AppConfig): string | number {
+function getConfigValue(key: keyof AppConfig, defaultValue: string | number): string | number {
   const value = process.env[key]
   if (value === undefined) {
-    throw new Error(`Missing configuration value for ${key}`)
+    return defaultValue;
   }
   return value
 }
 
 function getConfigValueBool(key: keyof AppConfig, defaultValue: boolean): boolean {
   try {
-    const value = getConfigValue(key) as string
+    const value = getConfigValue(key, defaultValue ? 'true' : 'false') as string
     return value.toLowerCase() === 'true'
   } catch (error) {
     return defaultValue
@@ -30,19 +30,19 @@ function getConfigValueBool(key: keyof AppConfig, defaultValue: boolean): boolea
 }
 
 export function getAppPort(): number {
-  return parseInt(getConfigValue('APP_PORT') as string, 10)
+  return parseInt(getConfigValue('APP_PORT', 3000) as string, 10)
 }
 
 export function getUserLogin(): string {
-  return getConfigValue('USER_LOGIN') as string
+  return getConfigValue('USER_LOGIN', 'admin') as string
 }
 
 export function getUserPassword(): string {
-  return getConfigValue('USER_PASSWORD') as string
+  return getConfigValue('USER_PASSWORD', 'admin1') as string
 }
 
 export function getJwtSecret(): string {
-  return getConfigValue('JWT_SECRET') as string
+  return getConfigValue('JWT_SECRET', 'qwertyuiopasdfghjkl') as string
 }
 
 export function getUseErrorHandler(): boolean {
@@ -50,13 +50,13 @@ export function getUseErrorHandler(): boolean {
 }
 
 export function getPrivateKeyPath(): string {
-  return getConfigValue("PRIVATE_KEY_PATH") as string;
+  return getConfigValue('PRIVATE_KEY_PATH', '') as string;
 }
 
 export function getCertificateType(): string {
-  return getConfigValue("CERTIFICATE_PATH") as string;
+  return getConfigValue('CERTIFICATE_PATH', '') as string;
 }
 
 export function isHttpsEnabled(): boolean {
-  return getConfigValueBool("HTTPS_ENABLED", false);
+  return getConfigValueBool('HTTPS_ENABLED', false);
 }
