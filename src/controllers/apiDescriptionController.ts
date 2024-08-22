@@ -16,5 +16,11 @@ const getMarkdown = () => {
 }
 
 export const getApiDescription = (req: Request, res: Response): void => {
-  res.send(getMarkdown())
+  const html = `<html>
+    <head>
+      <link rel="stylesheet" href="files/style.css">
+    </head>
+    <body>${getMarkdown()}</body>
+  </html>`;
+  res.send(html)
 }
