@@ -1,8 +1,9 @@
 export const Paths = {
+  ROOT: '/',
   MIRROR: '/mirror',
   TIME: '/time',
   IP: '/ip',
-  INFO: '/',
+  INFO: '/info',
   SECRET: '/secret',
   LOGIN: '/login',
   CHECK_TOKEN: '/checkToken',
