@@ -17,20 +17,23 @@ import {  startServer } from './commons/server'
 import { join } from 'path';
 import serveIndex from 'serve-index';
 import { getApiDescription } from './controllers/apiDescriptionController'
+import multer from 'multer'
 
 const app = express()
+const upload = multer();
 
 // Setup express
 app.use(setupThrottling({ maxRequests: 60, timeRangeSeconds: 30 }))
 app.use(express.json())
 app.use(Paths.MIRROR, express.text())
+app.use(express.urlencoded({ extended: true }));
 app.use(setupLogging())
 
 // // Setup paths
 app.get(Paths.ROOT, getApiDescription);
 app.get(Paths.TIME, getTime)
 app.get(Paths.IP, getIp)
-app.all(Paths.MIRROR, mirrorRequest)
+app.all(Paths.MIRROR, upload.any(), mirrorRequest)
 app.get(Paths.INFO, getSupportedPaths(app))
 app.post(Paths.LOGIN, passwordValidator, doLogin)
 app.get(Paths.SECRET, passwordValidator, getSecret)
