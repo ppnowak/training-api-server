@@ -2,12 +2,13 @@ import { Request, Response, NextFunction } from 'express'
 import { validateJwtToken } from './jwt'
 import { getUserLogin, getUserPassword } from './config'
 import { ApiError } from './errorHandler'
+import basicAuth from 'basic-auth';
 
-export const passwordValidator = (req: Request, res: Response, next: NextFunction) => {
-  const validators = [validateUserPassword, validateToken]
+export const passwordValidator = (runHttpAuth: boolean = false) => (req: Request, res: Response, next: NextFunction) => {
+  const validators = [validateBasicAuth, validateUserPassword, validateToken]
   let result: ApiError | undefined = undefined
   for (const validator of validators) {
-    result = validator(req, res)
+    result = validator(req, res, runHttpAuth)
     if (result === undefined) {
       break
     }
@@ -24,7 +25,7 @@ export type UserData = {
   password: string
 }
 
-const createUnauthorizedApiError = () => new ApiError(401, 'Unauthorized')
+const createUnauthorizedApiError = (runHttpAuth: boolean) => new ApiError(401, 'Unauthorized', runHttpAuth)
 
 export const getUserFromContext = (req: Request): UserData => {
   const user = (req.query.username as string) || (req.headers['x-username'] as string)
@@ -32,10 +33,10 @@ export const getUserFromContext = (req: Request): UserData => {
   return { user, password }
 }
 
-const validateUserPassword = (req: Request, res: Response): ApiError | undefined => {
+const validateUserPassword = (req: Request, res: Response, runHttpAuth: boolean = false): ApiError | undefined => {
   const { user, password } = getUserFromContext(req)
   if (!user || !password || !isValidUser(user, password)) {
-    return createUnauthorizedApiError()
+    return createUnauthorizedApiError(runHttpAuth)
   }
 }
 
@@ -53,22 +54,29 @@ export const extractTokenFromHeader = (req: Request): TokenData => {
   return { authType, token }
 }
 
-const validateToken = (req: Request, res: Response): ApiError | undefined => {
+const validateToken = (req: Request, res: Response, runHttpAuth: boolean = false): ApiError | undefined => {
   const { authType, token } = extractTokenFromHeader(req)
   if (!authType || !token) {
-    return createUnauthorizedApiError()
+    return createUnauthorizedApiError(runHttpAuth)
   }
 
   if (authType.toLowerCase() === 'bearer') {
     if (!isValidJwtToken(token)) {
-      return createUnauthorizedApiError()
+      return createUnauthorizedApiError(runHttpAuth)
     }
   } else if (authType.toLowerCase() === 'basic') {
     if (!isValidBasicAuth(token)) {
-      return createUnauthorizedApiError()
+      return createUnauthorizedApiError(runHttpAuth)
     }
   } else {
-    return createUnauthorizedApiError()
+    return createUnauthorizedApiError(runHttpAuth)
+  }
+}
+
+const validateBasicAuth = (req: Request, res: Response, runHttpAuth: boolean = false) => {
+  const credentials = basicAuth(req);
+  if (!credentials || !isValidUser(credentials.name, credentials.pass)) {
+    return createUnauthorizedApiError(runHttpAuth)
   }
 }
 

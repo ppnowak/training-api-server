@@ -18,12 +18,15 @@ import { join } from 'path';
 import serveIndex from 'serve-index';
 import { getApiDescription } from './controllers/apiDescriptionController'
 import multer from 'multer'
+import { fixEncoding } from './commons/encodingOverwriter'
+import { getUptimeController } from './controllers/uptimeController'
 
 const app = express()
 const upload = multer();
 
 // Setup express
 app.use(setupThrottling({ maxRequests: 60, timeRangeSeconds: 30 }))
+app.use(fixEncoding);
 app.use(express.json())
 app.use(Paths.MIRROR, express.text())
 app.use(express.urlencoded({ extended: true }));
@@ -35,10 +38,11 @@ app.get(Paths.TIME, getTime)
 app.get(Paths.IP, getIp)
 app.all(Paths.MIRROR, upload.any(), mirrorRequest)
 app.get(Paths.INFO, getSupportedPaths(app))
-app.post(Paths.LOGIN, passwordValidator, doLogin)
-app.get(Paths.SECRET, passwordValidator, getSecret)
+app.post(Paths.LOGIN, passwordValidator(), doLogin)
+app.get(Paths.SECRET, passwordValidator(true), getSecret)
 app.get(Paths.CHECK_TOKEN, getTokenInfo)
 app.get(Paths.REDIRECT, getRedirect)
+app.get(Paths.UPTIME, getUptimeController)
 app.use(userRouter)
 
 // Serve the entire directory and enable directory listing

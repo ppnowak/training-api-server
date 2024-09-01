@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 
 export const setupLogging = () => (req: Request, res: Response, next: NextFunction) => {
-  const postmanToken = req?.headers?.['postman-token'] || '???'
+  const postmanToken = req?.headers?.['postman-token'] || req?.headers?.['x-request-id'] || '???'
   console.log(`[${new Date().toISOString()}][${postmanToken}] ${req.method} ${req.url}`)
   next()
 }

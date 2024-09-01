@@ -7,5 +7,6 @@ export const Paths = {
   SECRET: '/secret',
   LOGIN: '/login',
   CHECK_TOKEN: '/checkToken',
-  REDIRECT: '/redirect'
+  REDIRECT: '/redirect',
+  UPTIME: '/uptime'
 }
